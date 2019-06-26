@@ -20,8 +20,7 @@ all_models = ['cnn_4', 'cnn_4_noreg', 'cnn_4_exp',
 
 # save path
 results_path = '../results'
-params_path = utils.make_directory(results_path, 'model_params')
-
+model_path = utils.make_directory(results_path, 'model_params')
 
 # dataset path
 data_path = '../data/Synthetic_dataset.h5'
@@ -39,7 +38,6 @@ for model_name in all_models:
     name = model_name
     print('model: ' + name)
 
-    model_path = utils.make_directory(params_path, model_name)
     file_path = os.path.join(model_path, name)
 
     # load model parameters

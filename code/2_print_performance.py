@@ -26,7 +26,8 @@ adv_status =     [False, False, True]
 
 # save path
 results_path = '../results'
-params_path = utils.make_directory(results_path, 'model_params')
+model_path = utils.make_directory(results_path, 'model_params')
+save_path = utils.make_directory(results_path, 'conv_filters')
 
 # dataset path
 data_path = '../data/Synthetic_dataset.h5'
@@ -54,7 +55,6 @@ with open(os.path.join(results_path, 'performance.tsv'), 'wb') as f:
                     name += '_adv'
                 print('model: ' + name)
 
-                model_path = utils.make_directory(params_path, model_name)
                 file_path = os.path.join(model_path, name)
 
                 # load model parameters
@@ -80,4 +80,31 @@ with open(os.path.join(results_path, 'performance.tsv'), 'wb') as f:
                 pr, pr_curves = metrics.pr(test['targets'], predictions)
 
                 # print performance results
-                f.write("%s\t%s\t%s\t%s\t%s\t%.3f\t%.3f\n"%(model_name, str(noise), str(dropout_status[i]), str(l2_status[i]), str(bn_status[i]), roc, pr))
+                f.write("%s\t%.3f\t%.3f\n"%(name, roc, pr))
+
+
+                # get 1st convolution layer filters
+                fmap = nntrainer.get_activations(sess, test, layer='conv1d_0_active')
+                W = visualize.activation_pwm(fmap, X=test['inputs'], threshold=0.5, window=19)
+
+                # plot 1st convolution layer filters
+                fig = visualize.plot_filter_logos(W, nt_width=50, height=100, norm_factor=None, num_rows=10)
+                fig.set_size_inches(100, 100)
+                outfile = os.path.join(save_path, name+'_conv_filters.pdf')
+                fig.savefig(outfile, format='pdf', dpi=200, bbox_inches='tight')
+                plt.close()
+
+                # save filters as a meme file for Tomtom 
+                output_file = os.path.join(save_path, name+'.meme')
+                utils.meme_generate(W, output_file, factor=None)
+
+                # clip filters about motif to reduce false-positive Tomtom matches 
+                W = np.squeeze(np.transpose(W, [3, 2, 0, 1]))
+                W_clipped = helper.clip_filters(W, threshold=0.5, pad=3)
+                
+                # since W is different format, have to use a different function
+                output_file = os.path.join(save_path, name+'_clip.meme')
+                helper.meme_generate(W_clipped, output_file, factor=None) 
+
+
+

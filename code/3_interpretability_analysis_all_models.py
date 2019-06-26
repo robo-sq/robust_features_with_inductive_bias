@@ -31,7 +31,7 @@ methods = ['backprop', 'smooth']
 
 # save path
 results_path = '../results'
-params_path = utils.make_directory(results_path, 'model_params')
+model_path = utils.make_directory(results_path, 'model_params')
 
 
 # dataset path
@@ -53,9 +53,6 @@ for method in methods:
 
     backprop_results ={}
     for model_name in all_models:
-
-        # model save path
-        model_path = utils.make_directory(params_path, model_name)
         
         for n, noise in enumerate(noise_status):
 

@@ -63,7 +63,7 @@ print_adv_test = True
 
 # save path
 results_path = '../results'
-params_path = utils.make_directory(results_path, 'model_params')
+model_path = utils.make_directory(results_path, 'model_params')
 
 # dataset path
 data_path = '../data/Synthetic_dataset.h5'
@@ -88,7 +88,6 @@ for n in range(len(dropout_status)):
             name = model_name+'_adv'
             print('model: ' + name)
 
-            model_path = utils.make_directory(params_path, model_name)
             file_path = os.path.join(model_path, name)
 
             # load model parameters
