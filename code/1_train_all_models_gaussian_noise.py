@@ -57,7 +57,7 @@ for model_name in all_models:
     data = {'train': train, 'valid': valid, 'test': test}
 
     # set data in dictionary
-    num_epochs = 10
+    num_epochs = 100
     batch_size = 100
     patience = 25
     verbose = 2

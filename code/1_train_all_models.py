@@ -13,7 +13,7 @@ from deepomics import utils, fit, visualize
 #------------------------------------------------------------------------------------------------
 
 
-all_models = ['LocalNet', 'DistNet'] 
+all_models = ['cnn_25_noreg', 'cnn_deep_noreg'] 
 
 # save path
 results_path = '../results'
@@ -55,7 +55,7 @@ for model_name in all_models:
     data = {'train': train, 'valid': valid, 'test': test}
 
     # set data in dictionary
-    num_epochs = 20
+    num_epochs = 200
     batch_size = 100
     patience = 25
     verbose = 2
