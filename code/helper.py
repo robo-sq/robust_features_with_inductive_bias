@@ -56,7 +56,7 @@ def load_synthetic_models(filepath, dataset='test'):
 
 
 
-def load_model(model_name, input_shape, outut_shape):
+def load_model(model_name, input_shape, output_shape):
 
     # import model
     if model_name == 'cnn_4':
