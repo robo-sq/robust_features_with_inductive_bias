@@ -79,6 +79,10 @@ def load_model(model_name, input_shape, output_shape):
         from models import cnn_deep_exp as genome_model
     elif model_name == 'mlp':
         from models import mlp as genome_model
+    elif model_name == 'LocalNet':
+        from models import LocalNet as genome_model
+    elif model_name == 'DistNet':
+        from models import DistNet as genome_model
 
     # load model specs
     model_layers, optimization = genome_model.model(input_shape,
@@ -94,8 +98,7 @@ def backprop(X, params, layer='output', class_index=None, batch_size=128, method
     tf.reset_default_graph()
 
     # build new graph
-    model_layers, optimization, genome_model = load_model(params['model_name'], params['input_shape'], 
-                                                   params['dropout_status'], params['l2_status'], params['bn_status'])
+    model_layers, optimization, genome_model = load_model(params['model_name'], params['input_shape'], params['output_shape'])
 
     nnmodel = nn.NeuralNet()
     nnmodel.build_layers(model_layers, optimization, method=method, use_scope=True)

@@ -22,7 +22,7 @@ tf.set_random_seed(247)
 def perturb(x_nat, y, sess, nnmodel, feed_dict, grad_tensor, k=20):
     """Given a set of examples (x_nat, y), returns a set of adversarial
        examples within epsilon of x_nat in l_infinity norm."""
-    epsilon = 0.2
+    epsilon = 0.1
     x = np.copy(x_nat)
     feed_dict[xx] = x
     feed_dict[yy] = y

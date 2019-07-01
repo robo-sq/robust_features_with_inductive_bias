@@ -12,21 +12,19 @@ from deepomics import neuralnetwork as nn
 from deepomics import utils, fit, visualize, saliency, metrics
 from sklearn.metrics import roc_curve, auc, precision_recall_curve, accuracy_score, roc_auc_score
 import helper
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
 np.random.seed(247)
 tf.set_random_seed(247)
 
 #---------------------------------------------------------------------------------------------------------
 
 
-all_models = ['cnn_4', 'cnn_4_noreg', 'cnn_4_exp',
-              'cnn_25', 'cnn_25_noreg', 'cnn_25_exp',
-              'cnn_deep', 'cnn_deep_noreg', 'cnn_deep_exp',
-              'mlp'] 
+all_models = ['LocalNet'] 
 noise_status =   [False, True, False]
 adv_status =     [False, False, True]
 
 
-methods = ['backprop', 'smooth']
+methods = ['backprop']
 
 
 # save path
@@ -43,6 +41,7 @@ test_model = helper.load_synthetic_models(data_path, dataset='test')
 # get data shapes
 input_shape = list(train['inputs'].shape)
 input_shape[0] = None
+output_shape = [None, train['targets'].shape[1]]
 
 true_index = np.where(test['targets'][:,0] == 1)[0]
 X = test['inputs'][true_index]
@@ -103,11 +102,11 @@ for method in methods:
         cPickle.dump(backprop_results, f, protocol=cPickle.HIGHEST_PROTOCOL)
 
 
-# print results
-for key in backprop_results.keys():
-    roc_score, pr_score = backprop_results[key]
-    print('%s\t%.3f+/-%.3f\t%.3f+/-%.3f'%(model_name[i], 
-                                          np.mean(roc_score), 
-                                          np.std(roc_score),
-                                          np.mean(pr_score), 
-                                          np.std(pr_score)))
+    # print results
+    for key in backprop_results.keys():
+        roc_score, pr_score = backprop_results[key]
+        print('%s\t%.3f+/-%.3f\t%.3f+/-%.3f'%(key, 
+                                              np.mean(roc_score), 
+                                              np.std(roc_score),
+                                              np.mean(pr_score), 
+                                              np.std(pr_score)))
