@@ -9,14 +9,11 @@ import helper
 import tensorflow as tf
 from deepomics import neuralnetwork as nn
 from deepomics import utils, fit, visualize
-
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
 #------------------------------------------------------------------------------------------------
 
 
-all_models = ['cnn_4', 'cnn_4_noreg', 'cnn_4_exp',
-          'cnn_25', 'cnn_25_noreg', 'cnn_25_exp',
-          'cnn_deep', 'cnn_deep_noreg', 'cnn_deep_exp',
-          'mlp'] 
+all_models = ['cnn_25_noreg', 'cnn_deep_noreg'] 
 
 # save path
 results_path = '../results'
@@ -59,7 +56,7 @@ for model_name in all_models:
     data = {'train': train, 'valid': valid, 'test': test}
 
     # set data in dictionary
-    num_epochs = 200
+    num_epochs = 10
     batch_size = 100
     patience = 25
     verbose = 2

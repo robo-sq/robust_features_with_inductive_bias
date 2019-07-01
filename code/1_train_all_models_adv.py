@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from deepomics import neuralnetwork as nn
 from deepomics import utils, fit, visualize, saliency, metrics
-
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
 import copy
 import helper
 import time
@@ -50,15 +50,12 @@ def initialize_feed_dict(placeholders, feed_dict):
 
 #-------------------------------------------------------------------------------------------
 
-all_models = ['cnn_4', 'cnn_4_noreg', 'cnn_4_exp',
-              'cnn_25', 'cnn_25_noreg', 'cnn_25_exp',
-              'cnn_deep', 'cnn_deep_noreg', 'cnn_deep_exp',
-              'mlp'] 
+all_models = ['LocalNet', 'DistNet'] 
+# all adversarial, clean then all adversarial
+adv_type = [(100, 0, 0), (100, 20, 0), (100, 20, 0.5)]
 
 batch_size = 50
 verbose = 1 
-num_epochs = 100
-num_clean_epochs = 20
 print_adv_test = True
 
 # save path
@@ -77,105 +74,108 @@ input_shape[0] = None
 output_shape = [None, train['targets'].shape[1]]
 
 
-for n in range(len(dropout_status)):
+for model_name in all_models:
 
-    for noise in noise_status:
-        # loop through models
-        for model_name in all_models:
-            tf.reset_default_graph()
+    for idx, adv in enumerate(adv_type):
 
-            # compile neural trainer
-            name = model_name+'_adv'
-            print('model: ' + name)
+        num_epochs = adv[0]
+        num_clean_epochs = adv[1]
+        prob_clean = adv[2]
 
-            file_path = os.path.join(model_path, name)
+        tf.reset_default_graph()
 
-            # load model parameters
-            model_layers, optimization, _ = helper.load_model(model_name, 
-                                                              input_shape,
-                                                              output_shape)
+        # compile neural trainer
+        name = model_name+'_adv' + str(idx)
+        print('model: ' + name)
 
-            # build neural network class
-            nnmodel = nn.NeuralNet()
-            nnmodel.build_layers(model_layers, optimization, supervised=True)
+        file_path = os.path.join(model_path, name)
 
-            grad_tensor = tf.gradients(nnmodel.mean_loss, nnmodel.placeholders['inputs'])[0]
+        # load model parameters
+        model_layers, optimization, _ = helper.load_model(model_name, 
+                                                          input_shape,
+                                                          output_shape)
 
-            xx = nnmodel.placeholders['inputs']
-            yy = nnmodel.placeholders['targets']
-            is_train = nnmodel.placeholders['is_training']
-            loss = nnmodel.mean_loss
-            #   nnmodel.inspect_layers()
-            performance = nn.MonitorPerformance('train', optimization['objective'], verbose)
-            performance.set_start_time(start_time = time.time())
+        # build neural network class
+        nnmodel = nn.NeuralNet()
+        nnmodel.build_layers(model_layers, optimization, supervised=True)
 
-            train_calc = [nnmodel.train_step, loss, nnmodel.metric]
-            train_feed = initialize_feed_dict(nnmodel.placeholders, nnmodel.feed_dict)
+        grad_tensor = tf.gradients(nnmodel.mean_loss, nnmodel.placeholders['inputs'])[0]
 
-            # create neural trainer
-            nntrainer = nn.NeuralTrainer(nnmodel, save='best', file_path=file_path)
+        xx = nnmodel.placeholders['inputs']
+        yy = nnmodel.placeholders['targets']
+        is_train = nnmodel.placeholders['is_training']
+        loss = nnmodel.mean_loss
+        #   nnmodel.inspect_layers()
+        performance = nn.MonitorPerformance('train', optimization['objective'], verbose)
+        performance.set_start_time(start_time = time.time())
 
-            # initialize session
-            sess = utils.initialize_session()
+        train_calc = [nnmodel.train_step, loss, nnmodel.metric]
+        train_feed = initialize_feed_dict(nnmodel.placeholders, nnmodel.feed_dict)
 
-            # set data in dictionary
-            #   data = {'train': train, 'valid': valid, 'test': test}
-            x_train = train['inputs']
-            y_train = train['targets']
+        # create neural trainer
+        nntrainer = nn.NeuralTrainer(nnmodel, save='best', file_path=file_path)
 
-            for epoch in range(num_epochs):
-                print(epoch)
-                index = np.random.permutation(len(x_train))
+        # initialize session
+        sess = utils.initialize_session()
 
-                for i in range((len(x_train) // batch_size)):
-                    # batch
-                    clean_batch_x = x_train[index[i*batch_size:(i+1)*batch_size]]
-                    clean_batch_y = y_train[index[i*batch_size:(i+1)*batch_size]]
+        # set data in dictionary
+        #   data = {'train': train, 'valid': valid, 'test': test}
+        x_train = train['inputs']
+        y_train = train['targets']
 
+        for epoch in range(num_epochs):
+            print(epoch)
+            index = np.random.permutation(len(x_train))
 
-                    if epoch >= num_clean_epochs:
-                        adv_batch = perturb(clean_batch_x, clean_batch_y,
-                                    sess, nnmodel, train_feed, grad_tensor)
+            for i in range((len(x_train) // batch_size)):
+                # batch
+                clean_batch_x = x_train[index[i*batch_size:int((prob_clean*2)*(i+1)*batch_size)]]
+                clean_batch_y = y_train[index[i*batch_size:(i+1)*batch_size]]
 
 
-                        train_feed[xx] = np.concatenate([clean_batch_x, adv_batch])
-                        train_feed[yy] = np.concatenate([clean_batch_y, clean_batch_y])
-                    else:
-                        train_feed[xx] = clean_batch_x
-                        train_feed[yy] = clean_batch_y
-
-                    results = sess.run(train_calc, feed_dict=train_feed)
-                    performance.add_loss(results[1])
-                    #performance.progress_bar(i+1., (len(x_train) // batch_size), metric/(i+1))
-
-                predictions = nntrainer.get_activations(sess, valid, 'output')
-                print(metrics.accuracy(valid['targets'], predictions))
-
-                if print_adv_test and epoch >= num_clean_epochs:
-                    adv_test['inputs'] = perturb(test['inputs'], test['targets'], sess, nnmodel, train_feed, grad_tensor)
-            #       adv_test['inputs'] = test['inputs']
-                    predictions = nntrainer.get_activations(sess, adv_test, 'output')
-                    roc, roc_curves = metrics.roc(test['targets'], predictions)
-                    #print('Adversarial AUC')
-                    #print np.mean(roc)
-                    print('Adversarial Accuracy')
-                    print(metrics.accuracy(test['targets'], predictions))
+                if epoch >= num_clean_epochs:
+                    adv_batch = perturb(clean_batch_x, clean_batch_y,
+                                sess, nnmodel, train_feed, grad_tensor)
 
 
-                # save cross-validcation metrics
-                loss, mean_vals, error_vals = nntrainer.test_model(sess, valid,
-                                                                        name="valid",
-                                                                        batch_size=batch_size,
-                                                                        verbose=verbose)
-            
+                    train_feed[xx] = np.concatenate([clean_batch_x, adv_batch])
+                    train_feed[yy] = np.concatenate([clean_batch_y, clean_batch_y])
+                else:
+                    train_feed[xx] = clean_batch_x
+                    train_feed[yy] = clean_batch_y
+
+                results = sess.run(train_calc, feed_dict=train_feed)
+                performance.add_loss(results[1])
+                #performance.progress_bar(i+1., (len(x_train) // batch_size), metric/(i+1))
+
+            predictions = nntrainer.get_activations(sess, valid, 'output')
+            print(metrics.accuracy(valid['targets'], predictions))
+
+            if print_adv_test and epoch >= num_clean_epochs:
+                adv_test['inputs'] = perturb(test['inputs'], test['targets'], sess, nnmodel, train_feed, grad_tensor)
+        #       adv_test['inputs'] = test['inputs']
+                predictions = nntrainer.get_activations(sess, adv_test, 'output')
+                roc, roc_curves = metrics.roc(test['targets'], predictions)
+                #print('Adversarial AUC')
+                #print np.mean(roc)
+                print('Adversarial Accuracy')
+                print(metrics.accuracy(test['targets'], predictions))
+
+
             # save cross-validcation metrics
-            loss, mean_vals, error_vals = nntrainer.test_model(sess, test,
-                                                                    name="test",
+            loss, mean_vals, error_vals = nntrainer.test_model(sess, valid,
+                                                                    name="valid",
                                                                     batch_size=batch_size,
                                                                     verbose=verbose)
+        
+        # save cross-validcation metrics
+        loss, mean_vals, error_vals = nntrainer.test_model(sess, test,
+                                                                name="test",
+                                                                batch_size=batch_size,
+                                                                verbose=verbose)
 
-            #nntrainer.save_model(sess)
-            nnmodel.save_model_parameters(sess, file_path+'_best.ckpt')
+        #nntrainer.save_model(sess)
+        nnmodel.save_model_parameters(sess, file_path+'_best.ckpt')
 
 
 
