@@ -59,7 +59,8 @@ verbose = 1
 print_adv_test = True
 
 # save path
-results_path = '../results'
+#results_path = '/content/drive/My Drive/results'
+results_path = '/content/drive/My Drive/results'
 model_path = utils.make_directory(results_path, 'model_params')
 
 # dataset path
@@ -129,17 +130,19 @@ for model_name in all_models:
 
             for i in range((len(x_train) // batch_size)):
                 # batch
-                clean_batch_x = x_train[index[i*batch_size:int((prob_clean*2)*(i+1)*batch_size)]]
-                clean_batch_y = y_train[index[i*batch_size:(i+1)*batch_size]]
+                clean_batch_x = x_train[index[i*batch_size:int((i+1)*batch_size)]]
+                clean_batch_y = y_train[index[i*batch_size:int((i+1)*batch_size)]]
 
 
                 if epoch >= num_clean_epochs:
                     adv_batch = perturb(clean_batch_x, clean_batch_y,
                                 sess, nnmodel, train_feed, grad_tensor)
 
-
-                    train_feed[xx] = np.concatenate([clean_batch_x, adv_batch])
-                    train_feed[yy] = np.concatenate([clean_batch_y, clean_batch_y])
+                    clean_batch_x = x_train[index[i*batch_size:int((prob_clean*2)*(i+1)*batch_size)]]
+                    clean_batch_y = y_train[index[i*batch_size:int((prob_clean*2)*(i+1)*batch_size)]]
+                    if len(clean_batch_x) > 0:
+                        train_feed[xx] = np.concatenate([clean_batch_x, adv_batch])
+                        train_feed[yy] = np.concatenate([clean_batch_y, clean_batch_y])
                 else:
                     train_feed[xx] = clean_batch_x
                     train_feed[yy] = clean_batch_y
