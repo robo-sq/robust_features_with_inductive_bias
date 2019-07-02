@@ -50,7 +50,7 @@ def initialize_feed_dict(placeholders, feed_dict):
 
 #-------------------------------------------------------------------------------------------
 
-all_models = ['cnn_25_noreg'] 
+all_models = ['cnn_deep_noreg'] 
 # all adversarial, clean then all adversarial
 #adv_type = [(80, 0, 0), (80, 20, 0), (80, 20, 0.5)]
 adv_type = [(80, 20, 0.5)]
