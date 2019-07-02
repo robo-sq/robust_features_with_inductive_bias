@@ -50,17 +50,18 @@ def initialize_feed_dict(placeholders, feed_dict):
 
 #-------------------------------------------------------------------------------------------
 
-all_models = ['cnn_25_noreg', 'cnn_deep_noreg'] 
+all_models = ['cnn_25_noreg'] 
 # all adversarial, clean then all adversarial
-adv_type = [(80, 0, 0), (80, 20, 0), (80, 20, 0.5)]
+#adv_type = [(80, 0, 0), (80, 20, 0), (80, 20, 0.5)]
+adv_type = [(80, 20, 0.5)]
 
 batch_size = 50
 verbose = 1 
 print_adv_test = True
 
 # save path
-#results_path = '/content/drive/My Drive/results'
-results_path = '/content/drive/My Drive/results'
+results_path = '../results'
+# results_path = '/content/drive/My Drive/results'
 model_path = utils.make_directory(results_path, 'model_params')
 
 # dataset path
@@ -86,7 +87,7 @@ for model_name in all_models:
         tf.reset_default_graph()
 
         # compile neural trainer
-        name = model_name+'_adv' + str(idx)
+        name = model_name+'_adv' + str(2)
         print('model: ' + name)
 
         file_path = os.path.join(model_path, name)
