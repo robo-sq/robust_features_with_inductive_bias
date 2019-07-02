@@ -60,8 +60,8 @@ verbose = 1
 print_adv_test = True
 
 # save path
-results_path = '../results'
-# results_path = '/content/drive/My Drive/results'
+#results_path = '../results'
+results_path = '/content/drive/My Drive/results'
 model_path = utils.make_directory(results_path, 'model_params')
 
 # dataset path
