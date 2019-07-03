@@ -68,13 +68,17 @@ def load_model(model_name, input_shape, output_shape):
     elif model_name == 'cnn_25':
         from models import cnn_25 as genome_model
     elif model_name == 'cnn_25_noreg':
-        from models import cnn_25 as genome_model
+        from models import cnn_25_noreg as genome_model
+    elif model_name == 'cnn_25_noreg_mnist':
+        from models import cnn_25_noreg_mnist as genome_model
     elif model_name == 'cnn_25_exp':
         from models import cnn_25_exp as genome_model
     elif model_name == 'cnn_deep':
         from models import cnn_deep as genome_model
     elif model_name == 'cnn_deep_noreg':
         from models import cnn_deep_noreg as genome_model
+    elif model_name == 'cnn_deep_noreg_mnist':
+        from models import cnn_deep_noreg_mnist as genome_model
     elif model_name == 'cnn_deep_exp':
         from models import cnn_deep_exp as genome_model
     elif model_name == 'mlp':
