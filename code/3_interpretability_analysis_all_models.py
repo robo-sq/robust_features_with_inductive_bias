@@ -68,9 +68,14 @@ for method in methods:
                 
                 file_path = os.path.join(model_path, name)
 
-                # attribution parameters for early stopping epoch
-                params['model_path'] = file_path+'_last.ckpt'
+                # attribution parameters for trained model
+                params = {'model_name': model_name, 
+                          'input_shape': input_shape, 
+                          'output_shape': output_shape,
+                          'model_path': file_path+'_last.ckpt',
+                         }
 
+                # get attribution scores
                 if method == 'backprop':
                     X_attrib = helper.backprop(X, params, layer='output', class_index=None, method='backprop')
                 elif method == 'smoothgrad':
