@@ -21,7 +21,7 @@ results_path = '/content/drive/My Drive/results'
 model_path = utils.make_directory(results_path, 'model_params/mnist')
 
 # dataset path
-data_path = '../data/synthetic_dataset_mult.h5'
+data_path = '../data/Synthetic_dataset.h5'
 train, valid, test = helper.load_synthetic_dataset(data_path)
 
 # Import MINST data
