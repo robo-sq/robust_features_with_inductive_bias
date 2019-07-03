@@ -13,7 +13,7 @@ os.environ['KMP_DUPLICATE_LIB_OK']='True'
 #------------------------------------------------------------------------------------------------
 
 
-all_models = ['cnn_25_noreg', 'cnn_deep_noreg'] 
+all_models = ['cnn_deep_noreg'] 
 
 # save path
 #results_path = '../results'
