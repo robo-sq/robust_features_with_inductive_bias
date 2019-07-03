@@ -9,6 +9,7 @@ import tensorflow as tf
 sys.path.append('../..')
 from deepomics import neuralnetwork as nn
 from deepomics import utils, fit, visualize, saliency, metrics
+from sklearn.metrics import roc_curve, auc, precision_recall_curve, accuracy_score, roc_auc_score
 
 
 def load_synthetic_dataset(filepath, verbose=True):
@@ -95,7 +96,7 @@ def backprop(X, params, layer='output', class_index=None, batch_size=128, method
 
     # build new graph
     model_layers, optimization, genome_model = load_model(params['model_name'], params['input_shape'], 
-                                                   params['dropout_status'], params['l2_status'], params['bn_status'])
+                                                   params['output_shape'])
 
     nnmodel = nn.NeuralNet()
     nnmodel.build_layers(model_layers, optimization, method=method, use_scope=True)
@@ -112,7 +113,6 @@ def backprop(X, params, layer='output', class_index=None, batch_size=128, method
     saliency = nntrainer.get_saliency(sess, X, nnmodel.network[layer], class_index=class_index, batch_size=batch_size)
 
     sess.close()
-    tf.reset_default_graph()
     return saliency
 
 
@@ -124,7 +124,7 @@ def smooth_backprop(X, params, layer='output', class_index=None, num_average=50)
 
     # build new graph
     model_layers, optimization, genome_model = load_model(params['model_name'], params['input_shape'], 
-                                                   params['dropout_status'], params['l2_status'], params['bn_status'])
+                                                   params['output_shape'])
 
     nnmodel = nn.NeuralNet()
     nnmodel.build_layers(model_layers, optimization, method='backprop', use_scope=True)
@@ -151,8 +151,98 @@ def smooth_backprop(X, params, layer='output', class_index=None, num_average=50)
         noisy_saliency = nntrainer.get_saliency(sess, x+np.random.normal(scale=0.1, size=shape), nnmodel.network[layer], class_index=class_index, batch_size=num_average)
         saliency[i,:,:,:] = np.mean(noisy_saliency, axis=0)
 
+    sess.close()
+
     return saliency
 
+
+
+
+def mutagenesis(X, params, layer='output', class_index=None):
+    """wrapper for backprop/guided-backpro saliency"""
+
+    tf.reset_default_graph()
+
+    # build new graph
+    model_layers, optimization, genome_model = load_model(params['model_name'], params['input_shape'], 
+                                                   params['output_shape'])
+
+    nnmodel = nn.NeuralNet()
+    nnmodel.build_layers(model_layers, optimization, method=method, use_scope=True)
+    nntrainer = nn.NeuralTrainer(nnmodel, save='best', filepath=params['model_path'])
+
+    # setup session and restore optimal parameters
+    sess = utils.initialize_session(nnmodel.placeholders)
+    nntrainer.set_best_parameters(sess, params['model_path'], verbose=0)
+
+    wt_scores = nntrainer.get_activations(sess, {'inputs': X}, layer='output')
+    if class_index:
+        wt_scores = wt_scores[:,class_index]
+
+    N, L,_,A = X.shape
+
+    for x in X:
+        X_mut = []
+        for l in range(L):
+            for a in range(A):
+                X_new = np.copy(x)
+                X_new[l,0,:] = 0
+                X_new[l,0,a] = 1
+                X_mut.append(X_new)
+        X_mut = np.array(X_mut)
+
+        predictions = nntrainer.get_activations(sess, {'inputs': X_mut}, layer='output')
+
+        if class_index:
+            predictions = predictions[:,class_index]
+
+        mutagenesis = np.zeros((A,L))
+        k = 0
+        for l in range(L):
+            for a in range(A):
+                mutagenesis[a,l] = predictions[k]
+                k += 1
+
+        mut_scores.append([mutagenesis - wt_score])
+
+    mut_scores = np.vstack(mut_scores)
+    sess.close()
+
+    return mut_scores
+
+
+
+def interpretability_performance(X, X_attrib, X_model, method='grad_times_input'):
+
+    pr_score = []
+    roc_score = []
+    for j, gs in enumerate(X_attrib):
+
+        if method == 'grad_times_input':
+            score = np.squeeze(np.sum(X[j]*X_attrib[j], axis=2))
+        elif method == 'l2norm':
+            score = np.sqrt(np.sum(X_attrib[j]**2, axis=2))
+
+        # calculate information of ground truth
+        gt_info = np.log2(4) + np.sum(X_model[j]*np.log2(X_model[j]+1e-10),axis=0)
+
+        # set label if information is greater than 0
+        label = np.zeros(gt_info.shape)
+        label[gt_info > 0] = 1
+
+        # precision recall metric
+        precision, recall, thresholds = precision_recall_curve(label, score)
+        pr_score.append(auc(recall, precision))
+
+        # roc curve
+        fpr, tpr, thresholds = roc_curve(label, score)
+        roc_score.append(auc(fpr, tpr))
+
+    roc_score = np.array(roc_score)
+    pr_score = np.array(pr_score)
+
+    return roc_score, pr_score
+    
 
 
 

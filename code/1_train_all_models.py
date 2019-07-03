@@ -15,8 +15,8 @@ from deepomics import utils, fit
 
 num_trials = 5
 
-all_models = [#'cnn_4', 'cnn_4_noreg', 'cnn_4_exp',
-              #'cnn_25', 'cnn_25_noreg', 'cnn_25_exp',
+all_models = ['cnn_4', 'cnn_4_noreg', 'cnn_4_exp',
+              'cnn_25', 'cnn_25_noreg', 'cnn_25_exp',
               'cnn_deep', 'cnn_deep_noreg', 'cnn_deep_exp',
               'mlp'] 
 

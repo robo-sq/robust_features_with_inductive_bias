@@ -69,7 +69,7 @@ for method in methods:
                 file_path = os.path.join(model_path, name)
 
                 # attribution parameters for early stopping epoch
-                params['model_path'] = file_path+'_last.ckpt'
+                params['model_path'] = file_path+'_best.ckpt'
 
                 if method == 'backprop':
                     X_attrib = helper.backprop(X, params, layer='output', class_index=None, method='backprop')
@@ -83,7 +83,7 @@ for method in methods:
 
                 attribution_results[name] = [roc_score, pr_score]
 
-        with open(os.path.join(results_path, method+'_last_scores.pickle'), 'wb') as f:
+        with open(os.path.join(results_path, method+'_best_scores.pickle'), 'wb') as f:
             cPickle.dump(attribution_results, f, protocol=cPickle.HIGHEST_PROTOCOL)
 
 
