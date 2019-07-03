@@ -16,8 +16,8 @@ os.environ['KMP_DUPLICATE_LIB_OK']='True'
 all_models = ['cnn_25_noreg', 'cnn_deep_noreg'] 
 
 # save path
-results_path = '../results'
-#results_path = '/content/drive/My Drive/results'
+#results_path = '../results'
+results_path = '/content/drive/My Drive/results'
 model_path = utils.make_directory(results_path, 'model_params/mnist')
 
 # dataset path
