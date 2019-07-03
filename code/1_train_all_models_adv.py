@@ -47,21 +47,33 @@ def initialize_feed_dict(placeholders, feed_dict):
         train_feed[placeholders[key]] = feed_dict[key]
     return train_feed
 
+def const_annealing(clean_prop):
+
+    def const_fun(curr_iter):
+        return clean_prop
+
+    return const_fun
+
+def cos_annealing(tot_iter):
+
+    def cos_fun(curr_iter):
+        return (1./2)*(1+np.cos(np.pi*curr_iter/tot_iter))
+    return cos_fun
 
 #-------------------------------------------------------------------------------------------
 
-all_models = ['cnn_deep_noreg'] 
+all_models = ['cnn_25_noreg'] 
 # all adversarial, clean then all adversarial
-#adv_type = [(80, 0, 0), (80, 20, 0), (80, 20, 0.5)]
-adv_type = [(80, 20, 0.5)]
+adv_type = [(80, 0, const_annealing(0)), (80, 20, const_annealing(0)), (80, 20, const_annealing(0.5)), (80, 0, cos_annealing(80))]
+#adv_type = [(80, 0, cos_annealing(80))]
 
 batch_size = 50
 verbose = 1 
 print_adv_test = True
 
 # save path
-#results_path = '../results'
-results_path = '/content/drive/My Drive/results'
+results_path = '../results'
+#results_path = '/content/drive/My Drive/results'
 model_path = utils.make_directory(results_path, 'model_params')
 
 # dataset path
@@ -87,7 +99,7 @@ for model_name in all_models:
         tf.reset_default_graph()
 
         # compile neural trainer
-        name = model_name+'_adv' + str(2)
+        name = model_name+'_adv' + str(idx)
         print('model: ' + name)
 
         file_path = os.path.join(model_path, name)
@@ -128,7 +140,8 @@ for model_name in all_models:
         for epoch in range(num_epochs):
             print(epoch)
             index = np.random.permutation(len(x_train))
-
+            print(prob_clean(epoch))
+            num_clean_samples = int(prob_clean(epoch)*batch_size)
             for i in range((len(x_train) // batch_size)):
                 # batch
                 clean_batch_x = x_train[index[i*batch_size:int((i+1)*batch_size)]]
@@ -139,11 +152,14 @@ for model_name in all_models:
                     adv_batch = perturb(clean_batch_x, clean_batch_y,
                                 sess, nnmodel, train_feed, grad_tensor)
 
-                    clean_batch_x = x_train[index[i*batch_size:int((prob_clean*2)*(i+1)*batch_size)]]
-                    clean_batch_y = y_train[index[i*batch_size:int((prob_clean*2)*(i+1)*batch_size)]]
+                    clean_batch_x = x_train[index[i*batch_size:(i*batch_size + num_clean_samples)]]
+                    #clean_batch_y = y_train[index[i*batch_size:(i*batch_size + num_clean_samples)]]
+
+                    adv_batch = adv_batch[(i*batch_size + num_clean_samples):(i+1)*batch_size]
+
                     if len(clean_batch_x) > 0:
                         train_feed[xx] = np.concatenate([clean_batch_x, adv_batch])
-                        train_feed[yy] = np.concatenate([clean_batch_y, clean_batch_y])
+                        train_feed[yy] = clean_batch_y
                 else:
                     train_feed[xx] = clean_batch_x
                     train_feed[yy] = clean_batch_y
