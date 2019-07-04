@@ -1,5 +1,5 @@
 
-def model(input_shape, dropout=True, l2=True, batch_norm=True):
+def model(input_shape, output_shape):
 
     layer1 = {  'layer': 'input',
                 'input_shape': input_shape

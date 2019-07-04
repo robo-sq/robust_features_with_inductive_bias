@@ -11,17 +11,18 @@ import tensorflow as tf
 from deepomics import neuralnetwork as nn
 from deepomics import utils, fit, visualize, saliency, metrics
 import helper
-os.environ['KMP_DUPLICATE_LIB_OK']='True'
 np.random.seed(247)
 tf.set_random_seed(247)
 
 #---------------------------------------------------------------------------------------------------------
 
 
-all_models = ['LocalNet'] 
+all_models = ['cnn_4', 'cnn_4_noreg', 'cnn_4_exp',
+              'cnn_25', 'cnn_25_noreg', 'cnn_25_exp',
+              'cnn_deep', 'cnn_deep_noreg', 'cnn_deep_exp',
+              'mlp'] 
 noise_status =   [False, True, False]
 adv_status =     [False, False, True]
-
 
 
 methods = ['backprop', 'mutagenesis', 'smoothgrad']
@@ -41,7 +42,7 @@ test_model = helper.load_synthetic_models(data_path, dataset='test')
 # get data shapes
 input_shape = list(train['inputs'].shape)
 input_shape[0] = None
-output_shape = [None, train['targets'].shape[1]]
+output_shape = [None, 1]
 
 true_index = np.where(test['targets'][:,0] == 1)[0]
 X = test['inputs'][true_index]
@@ -67,11 +68,11 @@ for method in methods:
                 
                 file_path = os.path.join(model_path, name)
 
-                # attribution parameters for trained model
+                # attribution parameters for early stopping epoch
                 params = {'model_name': model_name, 
                           'input_shape': input_shape, 
                           'output_shape': output_shape,
-                          'model_path': file_path+'_last.ckpt',
+                          'model_path': file_path+'_best.ckpt',
                          }
 
                 # get attribution scores
@@ -87,14 +88,14 @@ for method in methods:
 
                 attribution_results[name] = [roc_score, pr_score]
 
-        with open(os.path.join(results_path, method+'_last_scores.pickle'), 'wb') as f:
+        with open(os.path.join(results_path, method+'_best_scores.pickle'), 'wb') as f:
             cPickle.dump(attribution_results, f, protocol=cPickle.HIGHEST_PROTOCOL)
 
 
     # print results
     for key in backprop_results.keys():
         roc_score, pr_score = backprop_results[key]
-        print('%s\t%.3f+/-%.3f\t%.3f+/-%.3f'%(key, 
+        print('%s\t%.3f+/-%.3f\t%.3f+/-%.3f'%(model_name[i], 
                                               np.mean(roc_score), 
                                               np.std(roc_score),
                                               np.mean(pr_score), 

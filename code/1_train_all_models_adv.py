@@ -5,6 +5,7 @@ from __future__ import print_function
 import os, sys
 import numpy as np
 from six.moves import cPickle
+from six.moves import cPickle
 import matplotlib.pyplot as plt
 
 import tensorflow as tf
@@ -18,6 +19,8 @@ import time
 np.random.seed(247)
 tf.set_random_seed(247)
 
+
+#-------------------------------------------------------------------------------------------
 
 def perturb(x_nat, y, sess, nnmodel, feed_dict, grad_tensor, k=20):
     """Given a set of examples (x_nat, y), returns a set of adversarial
@@ -69,12 +72,14 @@ adv_type = [(80, 0, cos_annealing(80))]
 
 batch_size = 50
 verbose = 1 
+
 print_adv_test = True
 
 # save path
 results_path = '../results'
 #results_path = '/content/drive/My Drive/results'
 model_path = utils.make_directory(results_path, 'model_params')
+metrics_path = utils.make_directory(results_path, 'train_metrics')
 
 # dataset path
 data_path = '../data/Synthetic_dataset.h5'
@@ -147,7 +152,6 @@ for model_name in all_models:
                 clean_batch_x = x_train[index[i*batch_size:int((i+1)*batch_size)]]
                 clean_batch_y = y_train[index[i*batch_size:int((i+1)*batch_size)]]
 
-
                 if epoch >= num_clean_epochs:
                     adv_batch = perturb(clean_batch_x, clean_batch_y,
                                 sess, nnmodel, train_feed, grad_tensor)
@@ -181,7 +185,6 @@ for model_name in all_models:
                 print('Adversarial Accuracy')
                 print(metrics.accuracy(test['targets'], predictions))
 
-
             # save cross-validcation metrics
             loss, mean_vals, error_vals = nntrainer.test_model(sess, valid,
                                                                     name="valid",
@@ -196,8 +199,3 @@ for model_name in all_models:
 
         #nntrainer.save_model(sess)
         nnmodel.save_model_parameters(sess, file_path+'_best.ckpt')
-
-
-
-
-

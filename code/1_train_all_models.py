@@ -4,20 +4,21 @@ from __future__ import print_function
 
 import os, sys
 import numpy as np
+from six.moves import cPickle
 import matplotlib.pyplot as plt
 import helper
 import tensorflow as tf
 from deepomics import neuralnetwork as nn
-from deepomics import utils, fit, visualize
+from deepomics import utils, fit
 
 #------------------------------------------------------------------------------------------------
-
 
 all_models = ['cnn_25_noreg', 'cnn_deep_noreg'] 
 
 # save path
 results_path = '/content/drive/My Drive/results'
 model_path = utils.make_directory(results_path, 'model_params')
+metrics_path = utils.make_directory(results_path, 'train_metrics')
 
 # dataset path
 data_path = '../data/Synthetic_dataset.h5'
@@ -55,7 +56,7 @@ for model_name in all_models:
     data = {'train': train, 'valid': valid, 'test': test}
 
     # set data in dictionary
-    num_epochs = 200
+    num_epochs = 20
     batch_size = 100
     patience = 25
     verbose = 2
