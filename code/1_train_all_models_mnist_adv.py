@@ -62,9 +62,9 @@ def cos_annealing(tot_iter):
 
 #-------------------------------------------------------------------------------------------
 
-all_models = ['cnn_25_noreg'] 
+all_models = ['cnn_25_noreg_mnist'] 
 # all adversarial, clean then all adversarial
-adv_type = [(80, 0, const_annealing(0)), (80, 20, const_annealing(0)), (80, 20, const_annealing(0.5)), (80, 0, cos_annealing(80))]
+adv_type = [(40, 0, const_annealing(0)), (40, 10, const_annealing(0)), (40, 10, const_annealing(0.5)), (40, 0, cos_annealing(40))]
 #adv_type = [(80, 0, cos_annealing(80))]
 
 batch_size = 50
@@ -74,7 +74,7 @@ print_adv_test = True
 # save path
 results_path = '../results'
 #results_path = '/content/drive/My Drive/results'
-model_path = utils.make_directory(results_path, 'model_params')
+model_path = utils.make_directory(results_path, 'model_params/mnist')
 
 # dataset path
 data_path = '../data/Synthetic_dataset.h5'
@@ -168,7 +168,7 @@ for model_name in all_models:
                     clean_batch_x = x_train[index[i*batch_size:(i*batch_size + num_clean_samples)]]
                     #clean_batch_y = y_train[index[i*batch_size:(i*batch_size + num_clean_samples)]]
 
-                    adv_batch = adv_batch[(i*batch_size + num_clean_samples):(i+1)*batch_size]
+                    adv_batch = adv_batch[num_clean_samples:batch_size]
 
                     if len(clean_batch_x) > 0:
                         train_feed[xx] = np.concatenate([clean_batch_x, adv_batch])
