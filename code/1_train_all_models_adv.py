@@ -62,10 +62,10 @@ def cos_annealing(tot_iter):
 
 #-------------------------------------------------------------------------------------------
 
-all_models = ['cnn_25_noreg'] 
+all_models = ['cnn_25_noreg', 'cnn_deep_noreg'] 
 # all adversarial, clean then all adversarial
-adv_type = [(80, 0, const_annealing(0)), (80, 20, const_annealing(0)), (80, 20, const_annealing(0.5)), (80, 0, cos_annealing(80))]
-#adv_type = [(80, 0, cos_annealing(80))]
+#adv_type = [(80, 0, const_annealing(0.5)), (80, 20, const_annealing(0)), (80, 20, const_annealing(0.5)), (80, 0, cos_annealing(80))]
+adv_type = [(80, 0, cos_annealing(80))]
 
 batch_size = 50
 verbose = 1 
@@ -154,12 +154,12 @@ for model_name in all_models:
 
                     clean_batch_x = x_train[index[i*batch_size:(i*batch_size + num_clean_samples)]]
                     #clean_batch_y = y_train[index[i*batch_size:(i*batch_size + num_clean_samples)]]
-
-                    adv_batch = adv_batch[(i*batch_size + num_clean_samples):(i+1)*batch_size]
+                    adv_batch = adv_batch[num_clean_samples:batch_size]
 
                     if len(clean_batch_x) > 0:
                         train_feed[xx] = np.concatenate([clean_batch_x, adv_batch])
                         train_feed[yy] = clean_batch_y
+
                 else:
                     train_feed[xx] = clean_batch_x
                     train_feed[yy] = clean_batch_y
