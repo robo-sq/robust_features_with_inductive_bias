@@ -65,35 +65,36 @@ res_dict = {}
 
 # loop through models
 for model_name in all_models:
-    tf.reset_default_graph()
-
-    name = model_name+'_noise'
-    print('model: ' + name)
-
-    file_path = os.path.join(model_path, name)
-
-    # load model parameters
-    model_layers, optimization, _ = helper.load_model(model_name, 
-                                                      input_shape,
-                                                      output_shape)
-
-    # build neural network class
-    nnmodel = nn.NeuralNet()
-    nnmodel.build_layers(model_layers, optimization, supervised=True)
-
-    nntrainer = nn.NeuralTrainer(nnmodel, save='best', file_path=file_path)
-
-    # initialize session
-    sess = utils.initialize_session()
-
-    # set data in dictionary
-    data = {'train': train, 'valid': valid, 'test': test}
-
     for eps in eps_list:
         res_dict[eps] = []
         for _ in range(num_trials):
+
+            tf.reset_default_graph()
+
+            name = model_name+'_noise'
+            print('model: ' + name)
+
+            file_path = os.path.join(model_path, name)
+
+            # load model parameters
+            model_layers, optimization, _ = helper.load_model(model_name, 
+                                                              input_shape,
+                                                              output_shape)
+
+            # build neural network class
+            nnmodel = nn.NeuralNet()
+            nnmodel.build_layers(model_layers, optimization, supervised=True)
+
+            nntrainer = nn.NeuralTrainer(nnmodel, save='best', file_path=file_path)
+
+            # initialize session
+            sess = utils.initialize_session()
+
             # set data in dictionary
-            num_epochs = 25
+            data = {'train': train, 'valid': valid, 'test': test}
+
+            # set data in dictionary
+            num_epochs = 20
             batch_size = 100
             patience = 25
             verbose = 2
@@ -124,7 +125,7 @@ for model_name in all_models:
             acc = metrics.accuracy(train['targets'], predictions)
             print('Epsilon: ' + str(eps))
             print('Trial: ' + str(_+1))
-            print(acc)
+            print(acc[0])
             res_dict[eps].append(acc)
         print('Mean for eps=' + str(eps))
         print(np.mean(res_dict[eps]))
