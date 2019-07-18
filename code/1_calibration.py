@@ -14,7 +14,7 @@ from deepomics import utils, fit
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 #------------------------------------------------------------------------------------------------
 
-num_trials = 10
+num_trials = 5
 
 # save path
 results_path = '../results'
@@ -54,7 +54,7 @@ else:
   data_path = '../data/Synthetic_dataset.h5'
   train, valid, test = helper.load_synthetic_dataset(data_path)
 
-eps_list = np.linspace(0.2,1,41)
+eps_list = np.linspace(0,1,51)
 
 # get data shapes
 input_shape = list(train['inputs'].shape)
@@ -67,7 +67,7 @@ res_dict = {}
 for model_name in all_models:
     for eps in eps_list:
         res_dict[eps] = []
-        for _ in range(num_trials):
+        for idx in range(num_trials):
 
             tf.reset_default_graph()
 
@@ -124,7 +124,7 @@ for model_name in all_models:
             predictions = nntrainer.get_activations(sess, train, 'output')
             acc = metrics.accuracy(train['targets'], predictions)
             print('Epsilon: ' + str(eps))
-            print('Trial: ' + str(_+1))
+            print('Trial: ' + str(idx+1))
             print(acc[0])
             res_dict[eps].append(acc)
         print('Mean for eps=' + str(eps))
