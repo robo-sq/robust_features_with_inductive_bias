@@ -18,7 +18,7 @@ num_trials = 10
 
 # save path
 results_path = '../results'
-#results_path = '/content/drive/My Drive/results'
+results_path = '/content/drive/My Drive/results'
 
 isMnist = False
 
@@ -129,7 +129,7 @@ for model_name in all_models:
         print('Mean for eps=' + str(eps))
         print(np.mean(res_dict[eps]))
 
-with open(os.path.join(results_path, model_name+'_acc.pickle'), 'wb') as f:
-            cPickle.dump(res_dict, f, protocol=cPickle.HIGHEST_PROTOCOL)
+        with open(os.path.join(results_path, model_name+'_acc.pickle'), 'wb') as f:
+                    cPickle.dump(res_dict, f, protocol=cPickle.HIGHEST_PROTOCOL)
 
-print(res_dict)
+        print(res_dict)
