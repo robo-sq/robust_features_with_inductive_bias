@@ -54,7 +54,7 @@ else:
   data_path = '../data/Synthetic_dataset.h5'
   train, valid, test = helper.load_synthetic_dataset(data_path)
 
-eps_list = np.linspace(0,1,51)
+eps_list = np.linspace(0.2,1,41)
 
 # get data shapes
 input_shape = list(train['inputs'].shape)
