@@ -93,7 +93,7 @@ for model_name in all_models:
         res_dict[eps] = []
         for _ in range(num_trials):
             # set data in dictionary
-            num_epochs = 50
+            num_epochs = 25
             batch_size = 100
             patience = 25
             verbose = 2
