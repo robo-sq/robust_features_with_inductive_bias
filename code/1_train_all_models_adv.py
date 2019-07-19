@@ -202,3 +202,7 @@ for eps in [0.01, 0.025, 0.05, 0.01, 0.15, 0.2]:
 
             #nntrainer.save_model(sess)
             nnmodel.save_model_parameters(sess, file_path+'_best.ckpt')
+print('Clean Acc')
+print(acc)
+print('Adv Acc')
+print(adv)
