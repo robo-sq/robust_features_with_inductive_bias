@@ -5,21 +5,21 @@ def model(input_shape, output_shape):
                 'input_shape': input_shape # 1000
              }
     layer2 = {  'layer': 'conv2d',
-                'num_filters': 30,
+                'num_filters': 32,
                 'filter_size': 19,
                 'padding': 'SAME',
                 'activation': 'relu',
-                'max_pool': 25, # 4
+                'max_pool': 2, # 4
                 }
     layer3 = {  'layer': 'conv2d',
                'num_filters': 64,
                'filter_size': 5,
                'padding': 'SAME',
                'activation': 'relu',
-               'max_pool': 4, # 4
+               'max_pool': 2, # 4
                }
     layer4 = {  'layer': 'dense',
-               'num_units': 128,
+               'num_units': 1024,
                'activation': 'relu',
                }
     layer5 = {  'layer': 'dense',
