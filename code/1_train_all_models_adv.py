@@ -95,6 +95,8 @@ acc_list = []
 adv_list = []
 
 for eps in [0.01, 0.025, 0.05, 0.01, 0.15, 0.2]:
+    acc_eps_list = []
+    adv_eps_list = []
     for model_name in all_models:
 
         for idx, adv in enumerate(adv_type):
@@ -188,21 +190,29 @@ for eps in [0.01, 0.025, 0.05, 0.01, 0.15, 0.2]:
                                                                         batch_size=batch_size,
                                                                         verbose=verbose)
             
-            predictions = nntrainer.get_activations(sess, test, 'output')
-            acc_list.append(metrics.accuracy(test['targets'], predictions))
+                predictions = nntrainer.get_activations(sess, test, 'output')
+                acc_eps_list.append(metrics.accuracy(test['targets'], predictions))
 
-            predictions = nntrainer.get_activations(sess, adv_test, 'output')
+                predictions = nntrainer.get_activations(sess, adv_test, 'output')
             
-            adv_list.append(metrics.accuracy(test['targets'], predictions))
+                adv_eps_list.append(metrics.accuracy(test['targets'], predictions))
             # save cross-validcation metrics
             loss, mean_vals, error_vals = nntrainer.test_model(sess, test,
                                                                     name="test",
                                                                     batch_size=batch_size,
                                                                     verbose=verbose)
-
+            acc_list.append(acc_eps_list)
+            adv_list.append(adv_eps_list)
             #nntrainer.save_model(sess)
             nnmodel.save_model_parameters(sess, file_path+'_best.ckpt')
 print('Clean Acc')
 print(acc_list)
 print('Adv Acc')
 print(adv_list)
+
+with open(os.path.join(results_path, model_name+'_clean_accuracy.pickle'), 'wb') as f:
+          cPickle.dump(acc_list, f, protocol=cPickle.HIGHEST_PROTOCOL)
+
+with open(os.path.join(results_path, model_name+'_adv_accuracy.pickle'), 'wb') as f:
+          cPickle.dump(adv_list, f, protocol=cPickle.HIGHEST_PROTOCOL)
+
