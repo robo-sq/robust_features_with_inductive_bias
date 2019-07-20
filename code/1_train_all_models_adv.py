@@ -67,7 +67,7 @@ def cos_annealing(tot_iter):
 all_models = ['cnn_deep_noreg'] 
 # all adversarial, clean then all adversarial
 adv_type = [(20, 0, const_annealing(0)), (80, 20, const_annealing(0)), (80, 20, const_annealing(0.5)), (80, 0, cos_annealing(80))]
-adv_type = [(50, 0, const_annealing(0))]
+adv_type = [(25, 0, const_annealing(0))]
 
 batch_size = 50
 verbose = 1 
@@ -91,8 +91,8 @@ input_shape = list(train['inputs'].shape)
 input_shape[0] = None
 output_shape = [None, train['targets'].shape[1]]
 
-acc = []
-adv = []
+acc_list = []
+adv_list = []
 
 for eps in [0.01, 0.025, 0.05, 0.01, 0.15, 0.2]:
     for model_name in all_models:
@@ -189,11 +189,11 @@ for eps in [0.01, 0.025, 0.05, 0.01, 0.15, 0.2]:
                                                                         verbose=verbose)
             
             predictions = nntrainer.get_activations(sess, test, 'output')
-            acc.append(metrics.accuracy(test['targets'], predictions))
+            acc_list.append(metrics.accuracy(test['targets'], predictions))
 
             predictions = nntrainer.get_activations(sess, adv_test, 'output')
             
-            adv.append(metrics.accuracy(test['targets'], predictions))
+            adv_list.append(metrics.accuracy(test['targets'], predictions))
             # save cross-validcation metrics
             loss, mean_vals, error_vals = nntrainer.test_model(sess, test,
                                                                     name="test",
@@ -203,6 +203,6 @@ for eps in [0.01, 0.025, 0.05, 0.01, 0.15, 0.2]:
             #nntrainer.save_model(sess)
             nnmodel.save_model_parameters(sess, file_path+'_best.ckpt')
 print('Clean Acc')
-print(acc)
+print(acc_list)
 print('Adv Acc')
-print(adv)
+print(adv_list)
