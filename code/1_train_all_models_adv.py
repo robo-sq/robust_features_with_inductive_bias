@@ -175,7 +175,7 @@ for eps in [0.01, 0.025, 0.05, 0.01, 0.15, 0.2]:
                 print(metrics.accuracy(valid['targets'], predictions))
 
                 if print_adv_test and epoch >= num_clean_epochs:
-                    adv_test['inputs'] = perturb(test['inputs'], test['targets'], sess, nnmodel, train_feed, grad_tensor)
+                    adv_test['inputs'] = perturb(test['inputs'], test['targets'], sess, nnmodel, train_feed, grad_tensor, eps)
             #       adv_test['inputs'] = test['inputs']
                     predictions = nntrainer.get_activations(sess, adv_test, 'output')
                     roc, roc_curves = metrics.roc(test['targets'], predictions)
