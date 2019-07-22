@@ -26,14 +26,14 @@ def model(input_shape, output_shape):
                 }
     layer5 = {  'layer': 'conv1d',
                 'num_filters': 96,
-                'filter_size': 1, # 12
+                'filter_size': 4, # 12
                 'padding': 'VALID',
                 'activation': 'relu',
                 'max_pool': 3, # 3
                 }
     layer6 = {  'layer': 'conv1d',
                 'num_filters': 128,
-                'filter_size': 1,
+                'filter_size': 4,
                 'padding': 'VALID',
                 'activation': 'relu',
                 }
